@@ -2,6 +2,7 @@ const express = require("express");
 const path = require("path");
 const session = require("express-session");
 const passport = require("passport");
+const cors = require("cors"); // <-- Import cors
 
 const { ensureAuthenticated, ensureMember, ensureAdmin } = require("./middleware/protect");
 const { injectUser } = require("./middleware/user");
@@ -17,6 +18,13 @@ const app = express();
 // View engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
+
+// CORS setup (add before other middleware)
+app.use(cors({
+  origin: "*", 
+  methods: ["GET", "POST"],
+  credentials: true
+}));
 
 // Middleware setup
 app.use(express.urlencoded({ extended: false }));
@@ -60,7 +68,6 @@ app.get("/make-admin", ensureMember, powerController.getAdmin);
 app.post("/make-admin", ensureMember, powerController.validateAdmin, powerController.postAdmin);
 
 // Start the server
-// Change this in your app.js file
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
