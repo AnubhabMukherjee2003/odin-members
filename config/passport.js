@@ -1,9 +1,7 @@
 const LocalStrategy = require("passport-local").Strategy;
-const pool = require("../db/pool");
+const { pool } = require("../db/pool"); // Correctly import the pool object
 
-// Function to initialize passport
 function initializePassport(passport) {
-  // Configure Local Strategy
   passport.use(
     new LocalStrategy(
       {
@@ -29,7 +27,6 @@ function initializePassport(passport) {
     )
   );
 
-  // Configure session management
   passport.serializeUser((user, done) => {
     done(null, user.uid);
   });

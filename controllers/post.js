@@ -1,4 +1,4 @@
-const pool = require("../db/pool");
+const {pool} = require("../db/pool");
 const { body, validationResult } = require('express-validator');
 
 const postController = {

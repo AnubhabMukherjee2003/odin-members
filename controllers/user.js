@@ -1,5 +1,5 @@
-const pool = require("../db/pool");
-const { body, validationResult } = require('express-validator');
+const { pool } = require("../db/pool"); // Correctly import the pool object
+const { body, validationResult } = require("express-validator");
 
 // Validation chains for reuse
 const signupValidationRules = [

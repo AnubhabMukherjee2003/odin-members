@@ -10,6 +10,7 @@ const initializePassport = require("./config/passport");
 const userController = require("./controllers/user");
 const powerController = require("./controllers/power");
 const postController = require("./controllers/post");
+const { testConnection } = require("./db/pool"); // <-- Import testConnection
 
 require("dotenv").config();
 
@@ -67,8 +68,16 @@ app.post("/delete-post/:pid", ensureAdmin, postController.deletePost);
 app.get("/make-admin", ensureMember, powerController.getAdmin);
 app.post("/make-admin", ensureMember, powerController.validateAdmin, powerController.postAdmin);
 
-// Start the server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+// Test the database connection before starting the server
+(async () => {
+  try {
+    await testConnection();
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("🚨 Unable to start the server due to database connection error.");
+    process.exit(1);
+  }
+})();
