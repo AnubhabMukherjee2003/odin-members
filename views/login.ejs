@@ -11,9 +11,19 @@
     <span class="heading">Log In</span>
     <span class="c1">Access your account</span>
     
-    <% if (locals.error) { %>
+    <% if (locals.flashError && flashError.length > 0) { %>
+      <div class="error-message">
+        <%= flashError %>
+      </div>
+    <% } else if (locals.error) { %>
       <div class="error-message">
         <%= error %>
+      </div>
+    <% } %>
+    
+    <% if (locals.flashMessage && flashMessage.length > 0) { %>
+      <div class="success-message">
+        <%= flashMessage %>
       </div>
     <% } %>
     
@@ -38,5 +48,10 @@
     
     <span class="c2">Don't have an account? <a href="/signup">Sign up</a></span>
   </div>
+
+  <script>
+    // Debug information for cookie/session issues
+    console.log('Cookie status:', document.cookie ? 'Cookies enabled' : 'Cookies disabled');
+  </script>
 </body>
 </html>

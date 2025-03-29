@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .error-container {
+      text-align: center;
+      padding: 50px 20px;
+    }
+    
+    .error-status {
+      font-size: 72px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: var(--error-color);
+    }
+    
+    .error-details {
+      margin-top: 30px;
+      padding: 20px;
+      background-color: rgba(0, 0, 0, 0.1);
+      border-radius: 5px;
+      text-align: left;
+      overflow: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container error-container">
+    <div class="error-status"><%= status || 500 %></div>
+    <h1><%= title %></h1>
+    <p class="error-message"><%= message %></p>
+    
+    <div class="button-container">
+      <a href="/" class="send-button">Return Home</a>
+      <button onclick="window.location.reload()" class="reset-button">Try Again</button>
+    </div>
+    
+    <% if (locals.error && Object.keys(error).length > 0) { %>
+      <div class="error-details">
+        <h3>Error Details (Development Only):</h3>
+        <pre><%= JSON.stringify(error, null, 2) %></pre>
+      </div>
+    <% } %>
+  </div>
+</body>
+</html>
