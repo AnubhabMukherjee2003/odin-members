@@ -3,15 +3,16 @@ const path = require("path");
 const session = require("express-session");
 const passport = require("passport");
 const cors = require("cors"); // <-- Import cors
-const pgSession = require("connect-pg-simple")(session); // <-- Import pgSession
 
 const { ensureAuthenticated, ensureMember, ensureAdmin } = require("./middleware/protect");
 const { injectUser } = require("./middleware/user");
+
 const initializePassport = require("./config/passport");
+const { testConnection } = require("./db/pool"); // <-- Import testConnection
+
 const userController = require("./controllers/user");
 const powerController = require("./controllers/power");
 const postController = require("./controllers/post");
-const { testConnection } = require("./db/pool"); // <-- Import testConnection
 
 require("dotenv").config();
 
@@ -32,9 +33,6 @@ app.use(cors({
 app.use(express.urlencoded({ extended: false }));
 app.use(
   session({
-    store: new pgSession({
-      pool: require("./db/pool").pool, // Use the existing pool
-    }),
     secret: process.env.SESSION_SECRET || "cats",
     resave: false,
     saveUninitialized: false,
@@ -44,7 +42,6 @@ app.use(
     },
   })
 );
-app.use(passport.initialize());
 app.use(passport.session());
 app.use(injectUser); // Inject user into response locals
 app.use(express.static(path.join(__dirname, "public")));
