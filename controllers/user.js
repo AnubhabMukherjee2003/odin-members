@@ -1,4 +1,20 @@
 const pool = require("../db/pool");
+const { body, validationResult } = require('express-validator');
+
+// Validation chains for reuse
+const signupValidationRules = [
+  body('username').trim().isLength({ min: 3 }).withMessage('Username must be at least 3 characters'),
+  body('first_name').trim().notEmpty().withMessage('First name is required'),
+  body('last_name').trim().notEmpty().withMessage('Last name is required'),
+  body('user_mail').isEmail().withMessage('Must be a valid email address'),
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  body('confirm_password').custom((value, { req }) => {
+    if (value !== req.body.password) {
+      throw new Error('Passwords do not match');
+    }
+    return true;
+  })
+];
 
 const userController = {
   // Display home page with posts
@@ -28,32 +44,31 @@ const userController = {
     res.render("signup", { title: "Sign Up" });
   },
 
+  // Validation middleware for signup
+  validateSignup: signupValidationRules,
+
   // Process signup form
   postSignup: async (req, res) => {
     try {
+      // Check for validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.render("signup", {
+          title: "Sign Up",
+          error: errors.array()[0].msg,
+          formData: req.body // Pass back the form data to repopulate fields
+        });
+      }
+
       const {
         username,
         first_name,
         last_name,
         user_mail,
-        password,
-        confirm_password,
+        password
       } = req.body;
 
-      if (!username || !first_name || !last_name || !user_mail || !password) {
-        return res.render("signup", {
-          title: "Sign Up",
-          error: "All fields are required",
-        });
-      }
-
-      if (password !== confirm_password) {
-        return res.render("signup", {
-          title: "Sign Up",
-          error: "Passwords do not match",
-        });
-      }
-
+      // Check if username already exists
       const userCheck = await pool.query(
         "SELECT * FROM userspace WHERE username = $1",
         [username]
@@ -63,9 +78,11 @@ const userController = {
         return res.render("signup", {
           title: "Sign Up",
           error: "Username already exists",
+          formData: req.body
         });
       }
 
+      // Check if email already exists
       const emailCheck = await pool.query(
         "SELECT * FROM userspace WHERE user_mail = $1",
         [user_mail]
@@ -75,6 +92,7 @@ const userController = {
         return res.render("signup", {
           title: "Sign Up",
           error: "Email already in use",
+          formData: req.body
         });
       }
 
@@ -92,6 +110,7 @@ const userController = {
       res.render("signup", {
         title: "Sign Up",
         error: "Error creating account. Please try again.",
+        formData: req.body
       });
     }
   },
@@ -100,6 +119,12 @@ const userController = {
   getLogin: (req, res) => {
     res.render("login", { title: "Login" });
   },
+
+  // Validate login input
+  validateLogin: [
+    body('username').trim().notEmpty().withMessage('Username is required'),
+    body('password').notEmpty().withMessage('Password is required')
+  ],
 
   // Handle user logout
   logout: (req, res, next) => {
@@ -110,7 +135,6 @@ const userController = {
       res.redirect("/");
     });
   },
-
 };
 
 module.exports = userController;

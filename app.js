@@ -4,11 +4,11 @@ const session = require("express-session");
 const passport = require("passport");
 
 const { ensureAuthenticated, ensureMember, ensureAdmin } = require("./middleware/protect");
-const {injectUser} = require("./middleware/user");
+const { injectUser } = require("./middleware/user");
 const initializePassport = require("./config/passport");
 const userController = require("./controllers/user");
-const powerController=require("./controllers/power");
-const postController=require("./controllers/post");
+const powerController = require("./controllers/power");
+const postController = require("./controllers/post");
 
 require("dotenv").config();
 
@@ -25,6 +25,7 @@ app.use(session({
   resave: false, 
   saveUninitialized: false 
 }));
+app.use(passport.initialize());
 app.use(passport.session());
 app.use(injectUser); // Inject user into response locals
 app.use(express.static(path.join(__dirname, "public")));
@@ -37,9 +38,9 @@ app.get("/", userController.getHome);
 
 // Authentication routes
 app.get("/signup", userController.getSignup);
-app.post("/signup", userController.postSignup);
+app.post("/signup", userController.validateSignup, userController.postSignup);
 app.get("/login", userController.getLogin);
-app.post("/login", passport.authenticate("local", {
+app.post("/login", userController.validateLogin, passport.authenticate("local", {
   successRedirect: "/",
   failureRedirect: "/login",
 }));
@@ -47,16 +48,16 @@ app.get("/logout", userController.logout);
 
 // Member routes
 app.get("/member", ensureAuthenticated, powerController.getMember);
-app.post("/member", ensureAuthenticated, powerController.postMember);
+app.post("/member", ensureAuthenticated, powerController.validateMember, powerController.postMember);
 
 // Post routes
 app.get("/create-post", ensureMember, postController.getCreatePost);
-app.post("/create-post", ensureMember, postController.postCreatePost);
+app.post("/create-post", ensureMember, postController.validatePost, postController.postCreatePost);
 app.post("/delete-post/:pid", ensureAdmin, postController.deletePost);
 
 // Admin routes
 app.get("/make-admin", ensureMember, powerController.getAdmin);
-app.post("/make-admin", ensureMember, powerController.postAdmin);
+app.post("/make-admin", ensureMember, powerController.validateAdmin, powerController.postAdmin);
 
 // Start the server
 app.listen(3000, () => {
