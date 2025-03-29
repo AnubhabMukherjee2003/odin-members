@@ -9,7 +9,6 @@ const pool = new Pool({
   },
 });
 
-// Test the database connection
 async function testConnection(retries = 5) {
   while (retries > 0) {
     try {

@@ -3,6 +3,7 @@ const path = require("path");
 const session = require("express-session");
 const passport = require("passport");
 const cors = require("cors"); // <-- Import cors
+const pgSession = require("connect-pg-simple")(session); // <-- Import pgSession
 
 const { ensureAuthenticated, ensureMember, ensureAdmin } = require("./middleware/protect");
 const { injectUser } = require("./middleware/user");
@@ -29,11 +30,20 @@ app.use(cors({
 
 // Middleware setup
 app.use(express.urlencoded({ extended: false }));
-app.use(session({ 
-  secret: process.env.SESSION_SECRET || "cats", 
-  resave: false, 
-  saveUninitialized: false 
-}));
+app.use(
+  session({
+    store: new pgSession({
+      pool: require("./db/pool").pool, // Use the existing pool
+    }),
+    secret: process.env.SESSION_SECRET || "cats",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production", // Use secure cookies in production
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    },
+  })
+);
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(injectUser); // Inject user into response locals
