@@ -1,101 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= title %></title>
-  <link rel="stylesheet" href="/style.css">
-</head>
-<body>
-  <div class="container">
-    <div class="header">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <!-- Add this near the top of your body tag to see debug information -->
+    <% if (process.env.NODE_ENV !== 'production') { %>
+    <div
+      style="
+        background-color: #333;
+        color: #fff;
+        padding: 10px;
+        margin-bottom: 20px;
+        font-family: monospace;
+        display: none;
+      "
+    >
+      <h3
+        onclick="this.parentElement.style.display = this.parentElement.style.display === 'none' ? 'block' : 'none'"
+        style="cursor: pointer; margin: 0"
+      >
+        🛠️ Debug Info (Click to toggle)
+      </h3>
       <div>
-        <h1>Community Posts</h1>
-        <div class="login-info">
-          <% if (locals.username) { %>
-            Welcome, <%= locals.username %> 
-            <% if (locals.member == 0) { %>
-              <span class="member-badge">Free User</span>
+        <p>
+          isAuthenticated: <%= typeof isAuthenticated !== 'undefined' ?
+          isAuthenticated : 'undefined' %>
+        </p>
+        <p>
+          username: <%= typeof username !== 'undefined' ? username : 'undefined'
+          %>
+        </p>
+        <p>
+          member: <%= typeof member !== 'undefined' ? member : 'undefined' %>
+        </p>
+        <p>uid: <%= typeof uid !== 'undefined' ? uid : 'undefined' %></p>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- Then continue with your existing template -->
+    <div class="container">
+      <div class="header">
+        <div>
+          <h1>Community Posts</h1>
+          <div class="login-info">
+            <% if (locals.username) { %> Welcome, <%= locals.username %> <% if
+            (locals.member == 0) { %>
+            <span class="member-badge">Free User</span>
             <% } else if (locals.member == 1) { %>
-              <span class="member-badge member-1">Member</span>
+            <span class="member-badge member-1">Member</span>
             <% } else if (locals.member == 2) { %>
-              <span class="member-badge member-2">Admin</span>
-            <% } %>
+            <span class="member-badge member-2">Admin</span>
+            <% } %> <% } %>
+          </div>
+        </div>
+        <div class="auth-links">
+          <% if (locals.username) { %> <% if (locals.member == 1) { %>
+          <a href="/make-admin">Become Admin</a>
+          <% } %>
+          <a href="/logout">Logout</a>
+          <% } else { %>
+          <a href="/login">Login</a>
+          <a href="/signup">Sign Up</a>
           <% } %>
         </div>
       </div>
-      <div class="auth-links">
-        <% if (locals.username) { %>
-          <% if (locals.member == 1) { %>
-            <a href="/make-admin">Become Admin</a>
-          <% } %>
-          <a href="/logout">Logout</a>
-        <% } else { %>
-          <a href="/login">Login</a>
-          <a href="/signup">Sign Up</a>
-        <% } %>
-      </div>
-    </div>
-    
-    <% if (locals.username && locals.member == 0) { %>
+
+      <% if (locals.username && locals.member == 0) { %>
       <div class="message-box">
         <span class="message-heading">You're using a free account.</span>
         <a href="/member">Become a member</a> to create posts!
       </div>
-    <% } else if (locals.username && locals.member > 0) { %>
+      <% } else if (locals.username && locals.member > 0) { %>
       <div class="button-container">
         <a href="/create-post" class="send-button">Create New Post</a>
       </div>
-    <% } else { %>
+      <% } else { %>
       <div class="message-box">
         <span class="message-heading">Limited Access</span>
-        <a href="/login">Log in</a> to see full post details and unlock more features!
+        <a href="/login">Log in</a> to see full post details and unlock more
+        features!
       </div>
-    <% } %>
-    
-    <div class="posts-container">
-      <% if (posts && posts.length > 0) { %>
-        <% posts.forEach(post => { %>
-          <div class="post">
-            <h2 class="post-title"><%= post.title %></h2>
-            
-            <% if (locals.member == 2) { %>
-              <!-- Admin delete button -->
-              <form action="/delete-post/<%= post.pid %>" method="POST" class="delete-form">
-                <button type="submit" class="delete-btn" onclick="return confirm('Are you sure you want to delete this post?')">
-                  ❌
-                </button>
-              </form>
-            <% } %>
-            
-            <% if (locals.username) { %>
-              <!-- Logged in users see full details -->
-              <div class="post-meta">
-                Posted by <%= post.first_name %> <%= post.last_name %> (@<%= post.username %>)
-                <% if (post.member > 0) { %>
-                  <span class="member-badge member-<%= post.member %>">
-                    <%= post.member === 1 ? 'Member' : post.member === 2 ? 'Admin' : '' %>
-                  </span>
-                <% } %>
-                <br>
-                <%= new Date(post.time).toLocaleString() %>
-              </div>
-              <div class="post-description">
-                <%= post.description %>
-              </div>
-            <% } else { %>
-              <!-- Non-logged in users see limited content -->
-              <div class="post-description">
-                <%= post.description.substring(0, 3) %>...
-                <span class="truncated">[Log in to see the full post]</span>
-              </div>
-            <% } %>
-          </div>
-        <% }); %>
-      <% } else { %>
-        <p>No posts found.</p>
       <% } %>
+
+      <div class="posts-container">
+        <% if (posts && posts.length > 0) { %> <% posts.forEach(post => { %>
+        <div class="post">
+          <h2 class="post-title"><%= post.title %></h2>
+
+          <% if (locals.member == 2) { %>
+          <!-- Admin delete button -->
+          <form
+            action="/delete-post/<%= post.pid %>"
+            method="POST"
+            class="delete-form"
+          >
+            <button
+              type="submit"
+              class="delete-btn"
+              onclick="return confirm('Are you sure you want to delete this post?')"
+            >
+              ❌
+            </button>
+          </form>
+          <% } %> <% if (locals.username) { %>
+          <!-- Logged in users see full details -->
+          <div class="post-meta">
+            Posted by <%= post.first_name %> <%= post.last_name %> (@<%=
+            post.username %>) <% if (post.member > 0) { %>
+            <span class="member-badge member-<%= post.member %>">
+              <%= post.member === 1 ? 'Member' : post.member === 2 ? 'Admin' :
+              '' %>
+            </span>
+            <% } %>
+            <br />
+            <%= new Date(post.time).toLocaleString() %>
+          </div>
+          <div class="post-description"><%= post.description %></div>
+          <% } else { %>
+          <!-- Non-logged in users see limited content -->
+          <div class="post-description">
+            <%= post.description.substring(0, 3) %>...
+            <span class="truncated">[Log in to see the full post]</span>
+          </div>
+          <% } %>
+        </div>
+        <% }); %> <% } else { %>
+        <p>No posts found.</p>
+        <% } %>
+      </div>
     </div>
-  </div>
-</body>
+  </body>
 </html>

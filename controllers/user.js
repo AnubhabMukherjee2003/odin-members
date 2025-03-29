@@ -29,12 +29,29 @@ const userController = {
         ORDER BY p.time DESC
       `);
 
+      // Pass user information directly to the template
+      const userData = req.isAuthenticated() ? {
+        username: req.user.username,
+        member: req.user.member,
+        uid: req.user.uid,
+        isAuthenticated: true
+      } : {
+        isAuthenticated: false
+      };
+
+      // Log what we're rendering
+      console.log(`🔍 Rendering index with authentication: ${userData.isAuthenticated}`);
+      if (userData.isAuthenticated) {
+        console.log(`🔍 User in controller: ${userData.username} (${userData.member})`);
+      }
+
       res.render("index", {
         title: "Home",
         posts: result.rows,
+        ...userData // Spread user data to the template
       });
     } catch (err) {
-      console.error(err);
+      console.error('❌ Error in getHome controller:', err);
       res.status(500).send("Error fetching posts");
     }
   },

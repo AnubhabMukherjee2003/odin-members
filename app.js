@@ -27,7 +27,7 @@ app.set("view engine", "ejs");
 
 // CORS setup (add before other middleware)
 app.use(cors({
-  origin: "",
+  origin: "*",
   methods: ["GET", "POST"],
   credentials: true
 }));
@@ -58,6 +58,7 @@ app.use((req, res, next) => {
       secure: process.env.NODE_ENV === "production",
       maxAge: 24 * 60 * 60 * 1000, // 1 day
       sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax',
+      httpOnly: true // Add this line
     },
   })(req, res, (err) => {
     if (err) {
@@ -70,7 +71,9 @@ app.use((req, res, next) => {
         saveUninitialized: false,
         cookie: { 
           secure: process.env.NODE_ENV === "production",
-          maxAge: 24 * 60 * 60 * 1000 // 1 day
+          maxAge: 24 * 60 * 60 * 1000, // 1 day
+          sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax',
+          httpOnly: true // Add this line
         }
       })(req, res, next);
     } else {
