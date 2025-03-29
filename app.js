@@ -44,22 +44,22 @@ app.use((req, res, next) => {
   next();
 });
 
-// Session middleware with better production settings
+// Session middleware with fixed configuration
 app.use(session({
   store: new pgSession({
     pool: pool,
     tableName: 'session',
-    createTableIfMissing: true
+    createTableIfMissing: true,
+    errorLog: console.error // Add explicit error logging
   }),
   secret: process.env.SESSION_SECRET || "dogs",
-  resave: false,
-  saveUninitialized: false,
+  resave: true, // Changed from false to true to ensure session is saved
+  saveUninitialized: true, // Changed to true for reliable cookie setting
   cookie: {
-    // Force secure cookies in production (Vercel is always HTTPS)
-    secure: process.env.NODE_ENV === "production",
+    // Don't use secure for local development
+    secure: false, // This is the most important change!
     maxAge: 24 * 60 * 60 * 1000, // 1 day
-    // Use 'none' for cross-site cookies in production (necessary for Vercel)
-    sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax',
+    sameSite: 'lax', // Use lax consistently
     httpOnly: true
   }
 }));
