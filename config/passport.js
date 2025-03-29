@@ -1,5 +1,6 @@
 const LocalStrategy = require("passport-local").Strategy;
 const { pool } = require("../db/pool");
+const bcrypt = require("bcrypt");
 
 function initializePassport(passport) {
   passport.use(
@@ -28,9 +29,9 @@ function initializePassport(passport) {
           }
           
           const user = result.rows[0];
-          
+          const match = await bcrypt.compare(password, user.password);
           // In a real app, you should use bcrypt.compare here instead of direct comparison
-          if (user.password !== password) {
+          if (!match) {
             console.log(`❌ Authentication failed: Invalid password for ${username}`);
             return done(null, false, { message: "Invalid username or password" });
           }

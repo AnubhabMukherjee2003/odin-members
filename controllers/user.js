@@ -1,5 +1,6 @@
 const { pool } = require("../db/pool"); // Correctly import the pool object
 const { body, validationResult } = require("express-validator");
+const bcrypt = require("bcrypt");
 
 // Validation chains for reuse
 const signupValidationRules = [
@@ -84,7 +85,7 @@ const userController = {
         user_mail,
         password
       } = req.body;
-
+      const hashedPassword = await bcrypt.hash(password, 10);
       // Check if username already exists
       const userCheck = await pool.query(
         "SELECT * FROM userspace WHERE username = $1",
@@ -117,7 +118,7 @@ const userController = {
       await pool.query(
         `INSERT INTO userspace (username, first_name, last_name, user_mail, password)
            VALUES ($1, $2, $3, $4, $5)`,
-        [username, first_name, last_name, user_mail, password]
+        [username, first_name, last_name, user_mail, hashedPassword]
       );
 
       // Redirect to login page
