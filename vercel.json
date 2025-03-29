@@ -6,28 +6,10 @@
       "use": "@vercel/node"
     }
   ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/app.js"
-    }
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/app.js" }
   ],
   "env": {
     "NODE_ENV": "production"
-  },
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, no-cache, must-revalidate"
-        },
-        {
-          "key": "Set-Cookie",
-          "value": "Path=/; HttpOnly; SameSite=None; Secure"
-        }
-      ]
-    }
-  ]
+  }
 }
