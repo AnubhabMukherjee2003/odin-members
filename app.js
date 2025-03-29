@@ -2,13 +2,14 @@ const express = require("express");
 const path = require("path");
 const session = require("express-session");
 const passport = require("passport");
-const cors = require("cors"); // <-- Import cors
+const cors = require("cors");
+const pgSession = require('connect-pg-simple')(session); // Add this
 
 const { ensureAuthenticated, ensureMember, ensureAdmin } = require("./middleware/protect");
 const { injectUser } = require("./middleware/user");
 
 const initializePassport = require("./config/passport");
-const { testConnection } = require("./db/pool"); // <-- Import testConnection
+const { pool, testConnection } = require("./db/pool");
 
 const userController = require("./controllers/user");
 const powerController = require("./controllers/power");
@@ -29,11 +30,19 @@ app.use(cors({
   credentials: true
 }));
 
-// Middleware setup
+// Body parser middleware
 app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+
+// Session middleware
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "cats",
+    store: new pgSession({
+      pool: pool,                // Use the pool from db/pool.js
+      tableName: 'session',      // Use the session table name
+      createTableIfMissing: true // Create the session table if it doesn't exist
+    }),
+    secret: process.env.SESSION_SECRET || "dogs",
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -75,6 +84,7 @@ app.post("/delete-post/:pid", ensureAdmin, postController.deletePost);
 app.get("/make-admin", ensureMember, powerController.getAdmin);
 app.post("/make-admin", ensureMember, powerController.validateAdmin, powerController.postAdmin);
 
+// At the end of app.js
 // Test the database connection before starting the server
 (async () => {
   try {
@@ -88,3 +98,6 @@ app.post("/make-admin", ensureMember, powerController.validateAdmin, powerContro
     process.exit(1);
   }
 })();
+
+// Export the app for serverless environments like Vercel
+module.exports = app;
