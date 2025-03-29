@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="form-container">
+    <span class="heading">Become a Member</span>
+    <span class="c1">Upgrade your account for more features</span>
+    
+    <% if (locals.error) { %>
+      <div class="error-message">
+        <%= error %>
+      </div>
+    <% } %>
+    
+    <div class="benefits">
+      <h2>Member Benefits:</h2>
+      <ul>
+        <li>Create and publish your own posts</li>
+        <li>Access to exclusive content</li>
+        <li>Member badge displayed next to your name</li>
+      </ul>
+    </div>
+    
+    <form action="/member" method="POST" class="form">
+      <div class="form-group">
+        <label for="passcode">Membership Passcode</label>
+        <input type="password" id="passcode" name="passcode" class="input" required>
+        <span class="c2">Enter the membership passcode to upgrade your account.</span>
+      </div>
+      
+      <div class="button-container">
+        <button type="submit" class="send-button">Upgrade to Member</button>
+        <div class="reset-button-container">
+          <a href="/" class="reset-button">Back Home</a>
+        </div>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

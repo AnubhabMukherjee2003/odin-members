@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="form-container">
+        <form class="form" method="POST" action="/make-admin">
+          <span class="heading">Become an Admin</span>
+          <span class="c1">Upgrade to admin privileges</span>
+          
+          <% if (locals.error) { %>
+            <div class="error-message">
+              <%= error %>
+            </div>
+          <% } %>
+      
+          <input class="input" type="text" name="passcode" placeholder="Admin passcode" required />
+          <span class="c2">Enter the admin passcode to gain full access powers</span>
+          <div class="button-container">
+            <button type="submit" class="send-button">Become an Admin</button>
+            <div class="reset-button-container">
+              <a href="/" class="reset-button">Back Home</a>
+            </div>
+          </div>
+        </form>
+      </div>
+</body>
+</html>
