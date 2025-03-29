@@ -47,22 +47,25 @@ function initializePassport(passport) {
 
   passport.serializeUser((user, done) => {
     try {
+      console.log(`🔍 Serializing user: ${user.username} (${user.uid})`);
       done(null, user.uid);
     } catch (err) {
+      console.error('❌ Error serializing user:', err);
       done(err);
     }
   });
 
   passport.deserializeUser(async (uid, done) => {
     try {
-      const result = await pool.query("SELECT * FROM userspace WHERE uid = $1", [
-        uid,
-      ]);
+      console.log(`🔍 Deserializing user ID: ${uid}`);
+      const result = await pool.query("SELECT * FROM userspace WHERE uid = $1", [uid]);
       
       if (result.rows.length === 0) {
+        console.warn(`⚠️ No user found with ID: ${uid}`);
         return done(null, false);
       }
       
+      console.log(`🔍 User deserialized: ${result.rows[0].username}`);
       done(null, result.rows[0]);
     } catch (err) {
       console.error("❌ Session deserialization error:", err.message);

@@ -25,9 +25,11 @@ const app = express();
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
-// CORS setup (add before other middleware)
+// CORS setup with better production settings
 app.use(cors({
-  origin: "*",
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://odin-members.vercel.app', 'https://www.odin-members.vercel.app',"https://injured-hyacinth-personalmine-37417a8b.koyeb.app", ] 
+    : '*',
   methods: ["GET", "POST"],
   credentials: true
 }));
@@ -42,44 +44,33 @@ app.use((req, res, next) => {
   next();
 });
 
-// Session middleware with error handling
+// Session middleware with better production settings
+app.use(session({
+  store: new pgSession({
+    pool: pool,
+    tableName: 'session',
+    createTableIfMissing: true
+  }),
+  secret: process.env.SESSION_SECRET || "dogs",
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    // Force secure cookies in production (Vercel is always HTTPS)
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 24 * 60 * 60 * 1000, // 1 day
+    // Use 'none' for cross-site cookies in production (necessary for Vercel)
+    sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax',
+    httpOnly: true
+  }
+}));
+
+// Add this for session error handling
 app.use((req, res, next) => {
-  session({
-    store: new pgSession({
-      pool: pool,
-      tableName: 'session',
-      createTableIfMissing: true,
-      errorLog: console.error
-    }),
-    secret: process.env.SESSION_SECRET || "dogs",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
-      sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax',
-      httpOnly: true // Add this line
-    },
-  })(req, res, (err) => {
-    if (err) {
-      console.error("❌ Session error:", err);
-      // Fall back to memory session store if database fails
-      console.log("⚠️ Falling back to memory session store");
-      session({
-        secret: process.env.SESSION_SECRET || "dogs",
-        resave: false,
-        saveUninitialized: false,
-        cookie: { 
-          secure: process.env.NODE_ENV === "production",
-          maxAge: 24 * 60 * 60 * 1000, // 1 day
-          sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax',
-          httpOnly: true // Add this line
-        }
-      })(req, res, next);
-    } else {
-      next();
-    }
-  });
+  if (!req.session) {
+    console.error("❌ Session unavailable");
+    return next(new Error("Session unavailable"));
+  }
+  next();
 });
 
 // Flash messages
@@ -112,6 +103,21 @@ function asyncHandler(fn) {
     Promise.resolve(fn(req, res, next)).catch(next);
   };
 }
+
+// Debug route
+app.get('/debug-session', (req, res) => {
+  res.json({
+    isAuthenticated: req.isAuthenticated(),
+    user: req.user ? {
+      username: req.user.username,
+      member: req.user.member,
+      uid: req.user.uid
+    } : null,
+    sessionID: req.sessionID,
+    sessionExists: !!req.session,
+    cookie: req.session ? req.session.cookie : null
+  });
+});
 
 // Home route
 app.get("/", asyncHandler(userController.getHome));
