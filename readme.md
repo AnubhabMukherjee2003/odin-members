@@ -12,7 +12,6 @@ A members-only community platform built with Node.js, Express, and PostgreSQL. T
 ## 🚀 Live Demo
 
 * [Vercel Deployment](https://odin-members.vercel.app)
-* [Koyeb Deployment](https://injured-hyacinth-personalmine-37417a8b.koyeb.app)
 
 ## 🛠️ Tech Stack
 
